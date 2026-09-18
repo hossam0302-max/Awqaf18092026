@@ -1,0 +1,307 @@
+swagger: '2.0'
+info:
+  title: AWQAF - Endowment Certificate API
+  description: Inquiry for the registered endowments using Certificate number and certificate end date or Seer National ID
+  version: '1.0'
+  contact:
+    email: support@nic.gov.sa
+basePath: /api/awqaf/endowmentcertificateapi/v1
+schemes:
+- http
+- https
+security:
+- basicAuth: []
+produces:
+- application/json
+consumes:
+- application/json
+paths:
+  /certificate:
+    parameters:
+    - $ref: '#/parameters/Custom-CertificateNumber'
+    - $ref: '#/parameters/Custom-PersonalInfoType'
+    - $ref: '#/parameters/Custom-CertificateEndDate'
+    - $ref: '#/parameters/Custom-SeerNationalId'
+    - $ref: '#/parameters/YeFI-Message-Id'
+    get:
+      summary: Inquiry for Endowment Certificate using Certificate number and certificate end date or Seer National ID
+      operationId:  getEndowmentCertificate
+      tags:
+      - certificate, inquiry
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/GetEndowmentCertificateResponse'
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/YefiErrorResponse'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/YefiErrorResponse'
+        404:
+          description: Not Found
+          schema:
+            $ref: '#/definitions/YefiErrorResponse'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/YefiErrorResponse'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/YefiErrorResponse'
+securityDefinitions:
+  basicAuth:
+    type: basic
+    description: Input your username and password to access this API
+    
+    
+definitions:
+  GetEndowmentCertificateResponse:
+    title: Get Endowment Certificate Response
+    type: object
+    description: Response object for getEndowmentCertificateResponse 200 response
+    properties:
+      yefiResponseHeader:
+        $ref: '#/definitions/YefiResponseHeader'
+      endowmentInformation:
+        $ref: '#/definitions/EndowmentInformation'
+    required:
+    - yefiResponseHeader
+    - endowmentInformation
+    
+  YefiResponseHeader:
+    description: Common Response Header for all responses (in body)
+    type: object
+    required:
+    - YeFI-Source-Id
+    - YeFI-Time-Stamp
+    - YeFI-Message-Id
+    properties:
+      YeFI-Source-Id:
+        description: Source ID of the requesting Agency
+        type: string
+        minLength: 1
+        maxLength: 20
+      YeFI-Time-Stamp:
+        description: Time stamp of the response
+        type: string
+        format: date-time
+      YeFI-Message-Id:
+        description: The original client reference value sent in the request
+        type: string
+        format: uuid
+  YefiError:
+    description: Common YEFI Error object
+    type: object
+    required:
+    - errorCode
+    - errorText
+    - raisedBy
+    - sourceAgency
+    properties:
+      raisedBy:
+        description: The name of the API raising this error
+        type: string
+        minLength: 1
+        maxLength: 100
+      sourceAgency:
+        description: The name of the GSB Provider who is raising this error
+        type: string
+        minLength: 1
+        maxLength: 100
+      errorCode:
+        description: 'The error code specific to this error. Format: "hhh.0.xxxx" for "Gateway Errors" and "hhh.1.xxxx" for "Provider Errors".'
+        type: string
+        minLength: 10
+        maxLength: 10
+      errorText:
+        description: The description of the error to help the consumer understand the problem
+        type: string
+        minLength: 1
+        maxLength: 200
+  YefiErrorResponse:
+    description: Common YEFI Error response for all errors
+    type: object
+    required:
+    - yefiResponseHeader
+    - yefiError
+    properties:
+      yefiResponseHeader:
+        $ref: '#/definitions/YefiResponseHeader'
+      yefiError:
+        $ref: '#/definitions/YefiError'
+        
+  EndowmentInformation:
+    title:  Endowment Information
+    type: object
+    properties:
+      endowmentName:
+        description: Endowment Name
+        type: string
+      endowmentTypeId:
+        description: Endowment Type
+        type: integer      
+      endwomentInitialDate:
+        description: Date of establishment of the endowment (Gregorian)
+        type: string
+        format: date
+      endwomentRegestrationDate:
+        description: Date of registration of the endowment with GAA (Gregorian)
+        type: string
+        format: date
+      certificateNumber:
+        description: Certificate number
+        type: integer     
+      certificateStatusId:
+        description: Certificate Status ID
+        type: integer     
+      certificateIssueDate:
+        description: Certificate issuing date (Gregorian)
+        type: string
+        format: date
+      certificateEndDate:
+        description: Certificate ending date (Gregorian)
+        type: string
+        format: date
+      unifiedNationalNumber:
+        description: National Endowment Number
+        type: integer 
+      Endowmers:
+        title: Endowemers List
+        description: Array of object
+        type: array
+        maxLength: 50
+        items:
+          $ref: '#/definitions/Endowmer'
+      Seers:
+        title: Seer List
+        description: Array of object
+        type: array
+        maxLength: 50
+        items:
+          $ref: '#/definitions/Seer'
+          
+          
+    required:
+      - endowmentName
+      - endowmentTypeId
+      - endwomentInitialDate
+      - endwomentRegestrationDate
+      - certificateNumber
+      - certificateStatusId
+      - certificateIssueDate
+      - certificateEndDate
+      - Endowmers
+      - Seers
+
+  Endowmer:
+    title: Endowmer Information 
+    type: object
+    properties:
+      firstName:
+        description: Endowmer first name
+        type: string
+      secondName:
+        description: Endowmer father name
+        type: string
+      thirdName:
+        description:  Endowmer grand father name
+        type: string
+      lastName: 
+        description: Endowmer family name
+        type: string
+      idType:
+        description: Endowmer ID Type
+        type: string
+      nationalId:
+        description: Endowmer national ID
+        type: string
+      birthDate:
+        description: Endowmer birthdate
+        type: string
+        format: date
+    required:
+    - firstName
+    - secondName
+    - lastName
+
+  Seer:
+    title: Seers Information 
+    type: object
+    properties:
+      firstName:
+        description: Seer first name
+        type: string
+      secondName:
+        description: Seer father name
+        type: string
+      thirdName:
+        description:  Seer grand father name
+        type: string
+      lastName: 
+        description: Seer family name
+        type: string
+      idType:
+        description: Seer ID Type
+        type: string
+      nationalId:
+        description: Seer national ID
+        type: string
+      birthDate:
+        description: Seer birthdate
+        type: string
+        format: date
+    required:
+    - firstName
+    - secondName
+    - lastName  
+
+parameters:
+  Custom-CertificateNumber:
+    name: Certificate Number
+    type: string
+    minLength: 1
+    maxLength: 10
+    in: header
+    required: true
+  Custom-PersonalInfoType:
+    name: Personal Information Type
+    type: string
+    enum:
+    - SeerNationalId
+    - CertificateEndDate
+    in: header
+    required: true
+  Custom-CertificateEndDate:
+    name: Certificate End Date
+    type: string
+    minLength: 10
+    maxLength: 10
+    format: date
+    in: header
+    required: false
+  Custom-SeerNationalId:
+    name: National ID OR Iqama Number
+    type: string
+    minLength: 10
+    maxLength: 10
+    in: header
+    required: false
+  YeFI-Source-Id:
+    name: YeFI-Source-Id
+    description: Source ID of the requesting Agency
+    type: string
+    minLength: 1
+    maxLength: 20
+    in: header
+    required: true
+  YeFI-Message-Id:
+    name: YeFI-Message-Id
+    description: Unique message id
+    type: string
+    in: header
+    required: true
